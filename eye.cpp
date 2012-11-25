@@ -26,13 +26,13 @@ int main(int argc,char**argv)
   namedWindow("right",CV_WINDOW_AUTOSIZE);
 
 
-  Ptr<FilterEngine> fx = createDerivFilter(CV_8UC1,CV_32FC1,1,0,5);
-  Ptr<FilterEngine> fy = createDerivFilter(CV_8UC1,CV_32FC1,0,1,5);
+  Ptr<FilterEngine> fx = createDerivFilter(CV_8UC1,CV_32FC1,1,0,3);
+  Ptr<FilterEngine> fy = createDerivFilter(CV_8UC1,CV_32FC1,0,1,3);
 
   Mat frame;
   while(1){
     c >> frame;
-    GaussianBlur(frame,frame,Size(5,5),3,3);
+    //GaussianBlur(frame,frame,Size(5,5),3,3);
     Mat g;
     cvtColor(frame,g,CV_BGR2GRAY);
     std::vector<Rect>faces;
@@ -46,7 +46,7 @@ int main(int argc,char**argv)
       Point
 	rc=faces[0].tl()+Point(.7*faces[0].width,.4*faces[0].height),
 	lc=faces[0].tl()+Point(.3*faces[0].width,.4*faces[0].height),
-	s=Size(.5*.35*faces[0].width,.5*.3*faces[0].height);
+	s=Size(.6*.5*.35*faces[0].width,.6*.5*.3*faces[0].height);
       //Mat left_eye;
       Rect roir(rc-s,rc+s),roil(lc-s,lc+s);;
       // Mat 
@@ -55,22 +55,27 @@ int main(int argc,char**argv)
       // 	rfx(roir.size(),CV_32FC1),
       // 	rfy(roir.size(),CV_32FC1);
 
-      Mat
-	lfx_u(g,roil);
+      Mat lblur(g,roil),rblur(g,roir);
+      double sig=1.6;
+      GaussianBlur(lblur,lblur,Size(7,7),sig,sig);
+      GaussianBlur(rblur,rblur,Size(7,7),sig,sig);
 
-      Mat lfx;
-      lfx_u.convertTo(lfx,CV_32FC1);
+      Mat lfx,lfy,rfx,rfy;
+      lblur.convertTo(lfx,CV_32FC1);
+      lfy=lfx.clone();
+      rblur.convertTo(rfx,CV_32FC1);
+      rfy=rfx.clone();
       
+      fx->apply(lblur,lfx);
+      fy->apply(lblur,lfy);
+      fx->apply(rblur,rfx);
+      fy->apply(rblur,rfy);
       
-      fx->apply(lfx_u,lfx);
-      //fy->apply(g,lfy,roil);
-      //   fx->apply(g,rfx,roil,Point(lc-s));
-      //fy->apply(g,rfy,roil,Point(lc-s));
       Mat lg, rg;
-      //magnitude(lfx,lfy,lg);
-      //magnitude(rfx,rfy,rg);
-      imshow("left",lfx/255.);
-      // imshow("right",.005*rg);
+      magnitude(lfx,lfy,lg);
+      magnitude(rfx,rfy,rg);
+      imshow("left",.01*lg);
+      imshow("right",.01*rg);
       
       //rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
       rectangle(frame,roil,Scalar(255)); 
