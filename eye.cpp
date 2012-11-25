@@ -24,41 +24,55 @@ int main(int argc,char**argv)
   namedWindow("bla",CV_WINDOW_AUTOSIZE);
   namedWindow("left",CV_WINDOW_AUTOSIZE);
   namedWindow("right",CV_WINDOW_AUTOSIZE);
-  Mat image;
+
+
+  Ptr<FilterEngine> fx = createDerivFilter(CV_8UC1,CV_32FC1,1,0,5);
+  Ptr<FilterEngine> fy = createDerivFilter(CV_8UC1,CV_32FC1,0,1,5);
+
+  Mat frame;
   while(1){
-    c >> image;
+    c >> frame;
     //GaussianBlur(image,image,Size(5,5),3,3);
     Mat g;
-    cvtColor(image,g,CV_BGR2GRAY);
-    double scale=2;
-    Mat small( cvRound (g.rows/scale), cvRound(g.cols/scale), CV_8UC1 );
-    resize(g,small,small.size(),0,0,INTER_NEAREST);
-    //    equalizeHist(small,small);
+    cvtColor(frame,g,CV_BGR2GRAY);
     std::vector<Rect>faces;
-    face.detectMultiScale(small,faces,1.2,12,
+    face.detectMultiScale(frame,faces,1.2,12,
 			  0
 			  |CV_HAAR_FIND_BIGGEST_OBJECT
 			  |CV_HAAR_DO_ROUGH_SEARCH
 			  |CV_HAAR_SCALE_IMAGE,Size(30,30));
     if(faces.size()){
-      //      rectangle(small,faces[0],Scalar(255));
       Rect left;
       Point
 	rc=faces[0].tl()+Point(.7*faces[0].width,.4*faces[0].height),
 	lc=faces[0].tl()+Point(.3*faces[0].width,.4*faces[0].height),
 	s=Size(.3*.35*faces[0].width,.3*.3*faces[0].height);
-      Mat left_eye(g,Rect(scale*(lc-s),scale*(lc+s))),
-	right_eye(g,Rect(scale*(rc-s),scale*(rc+s)));
+      //Mat left_eye;
+      Rect roi(lc-s,lc+s);
+      Mat 
+	lfx(roi.size(),CV_32FC1),
+	lfy(roi.size(),CV_32FC1),
+	rfx(roi.size(),CV_32FC1),
+	rfy(roi.size(),CV_32FC1);
       
-      imshow("left",left_eye);
-      imshow("right",right_eye);
+      fx->apply(g,lfx,roi);
+      fy->apply(g,lfy,roi);
+      fx->apply(g,rfx,roi);
+      fy->apply(g,rfy,roi);
+      Mat
+	lg,
+	rg;
+      magnitude(lfx,lfy,lg);
+      magnitude(rfx,rfy,rg);
+      imshow("left",.01*lg);
+      imshow("right",.01*rg);
       
-      rectangle(small,Rect(lc-s,lc+s),Scalar(255)); 
-      rectangle(small,faces[0],Scalar(255),3); 
-      rectangle(small,Rect(rc-s,rc+s),Scalar(255)); 
-      imshow("bla",small);
+      rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
+      rectangle(frame,faces[0],Scalar(255),3); 
+      rectangle(frame,Rect(rc-s,rc+s),Scalar(255)); 
+      imshow("bla",frame);
    } else
-      imshow("bla",small);
+      imshow("bla",g);
     
     if(waitKey(10) >= 0) 
       ;
