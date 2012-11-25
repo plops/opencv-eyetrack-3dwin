@@ -47,15 +47,17 @@ int main(int argc,char**argv)
 	rc=faces[0].tl()+Point(.7*faces[0].width,.4*faces[0].height),
 	lc=faces[0].tl()+Point(.3*faces[0].width,.4*faces[0].height),
 	s=Size(.3*.35*faces[0].width,.3*.3*faces[0].height);
-      rectangle(small,Rect(lc-s,lc+s),Scalar(255)); 
-      rectangle(small,faces[0],Scalar(255),3); 
-      rectangle(small,Rect(rc-s,rc+s),Scalar(255));
-      Mat left_eye(small,Rect(lc-s,lc+s)),
-	right_eye(small,Rect(rc-s,rc+s));
-      imshow("bla",small);
+      Mat left_eye(g,Rect(scale*(lc-s),scale*(lc+s))),
+	right_eye(g,Rect(scale*(rc-s),scale*(rc+s)));
+      
       imshow("left",left_eye);
       imshow("right",right_eye);
-    } else
+      
+      rectangle(small,Rect(lc-s,lc+s),Scalar(255)); 
+      rectangle(small,faces[0],Scalar(255),3); 
+      rectangle(small,Rect(rc-s,rc+s),Scalar(255)); 
+      imshow("bla",small);
+   } else
       imshow("bla",small);
     
     if(waitKey(10) >= 0) 
