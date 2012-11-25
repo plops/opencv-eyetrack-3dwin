@@ -3,6 +3,7 @@
 
 using namespace cv;
 
+
 void
 computeMerrit(const Mat &gx,const Mat &gy,const Mat &g,
 	      const Mat &Im, Mat &res,double threshold)
@@ -61,13 +62,20 @@ int main(int argc,char**argv)
   CascadeClassifier face;
   face.load("haarcascade_frontalface_default.xml");
   namedWindow("bla",CV_WINDOW_AUTOSIZE);
-  // namedWindow("left",CV_WINDOW_AUTOSIZE);
-  // namedWindow("lmerrit",CV_WINDOW_AUTOSIZE);
-  // namedWindow("right",CV_WINDOW_AUTOSIZE);
+  namedWindow("left",CV_WINDOW_AUTOSIZE);
+  namedWindow("lmerrit",CV_WINDOW_AUTOSIZE);
+  namedWindow("right",CV_WINDOW_AUTOSIZE);
+  namedWindow("rmerrit",CV_WINDOW_AUTOSIZE);
+  
+  int g_thr=30/4,g_thr_n=100;
+  createTrackbar("gradient-threshold","bla",&g_thr,g_thr_n);
+  int g_size=40/2,g_size_n=100;
+  createTrackbar("eye-size","bla",&g_size,g_size_n);
 
   moveWindow("bla",0,100);
-  //moveWindow("lmerrit",200,0);
-  //moveWindow("right",400,0);
+  moveWindow("lmerrit",200,0);
+  moveWindow("rmerrit",600,0);
+  moveWindow("right",400,0);
 
   Ptr<FilterEngine> fx = createDerivFilter(CV_8UC1,CV_32FC1,1,0,1);
   Ptr<FilterEngine> fy = createDerivFilter(CV_8UC1,CV_32FC1,0,1,1);
@@ -95,7 +103,7 @@ int main(int argc,char**argv)
   
     if(faces.size()){
       Rect left;
-      double eye_s=.7;
+      double eye_s=g_size*2./g_size_n;
       Point
 	rc=faces[0].tl()+Point(.7*faces[0].width,.4*faces[0].height),
 	lc=faces[0].tl()+Point(.3*faces[0].width,.4*faces[0].height),
@@ -138,9 +146,11 @@ int main(int argc,char**argv)
 
       //float threshold_r=30,threshold_l=threshold_r;
       Mat 
-	threshold_r=rsm+.3*rss,
-	threshold_l=lsm+.3*lss;
+	threshold_r=rsm+g_thr*4./g_thr_n*rss,
+	threshold_l=lsm+g_thr*4./g_thr_n*lss;
       
+      std::cout << g_thr << std::endl;
+
       //std::cout << threshold_r.at<double>(0) << " "
       //	<< threshold_l.at<double>(0) << std::endl;
       
@@ -156,16 +166,18 @@ int main(int argc,char**argv)
       minMaxLoc(rmer,0,&rma,0,&rMa);
       //      lmer.at<float>(Ma.y,Ma.x)=0;
       //rg.at<float>(Ma.y,Ma.x)=100;
-      //double rat=.0;
-      //      imshow("lmerrit",((lmer-mi)/(ma-mi)-rat)/(1-rat));
-      //imshow("left",255*rsel/norm(rsel,NORM_INF));
-      
-      //imshow("right",4*(rg-threshold_r)/norm((rg-threshold_r),NORM_INF));
+      {double rat=.9;
+	imshow("lmerrit",(lmer/lma-rat)/(1-rat));}
+      {double rat=.9;
+	imshow("rmerrit",(rmer/rma-rat)/(1-rat));}
+
+      imshow("left",4*(lg-threshold_l)/norm((lg-threshold_l),NORM_INF));
+      imshow("right",4*(rg-threshold_r)/norm((rg-threshold_r),NORM_INF));
 
       //rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
 
-      circle(frame,rc-s+rMa,4,Scalar(255));
-      circle(frame,lc-s+lMa,4,Scalar(255));
+      circle(frame,rc-s+rMa,8,Scalar(255));
+      circle(frame,lc-s+lMa,8,Scalar(255));
       rectangle(frame,faces[0],Scalar(255),3); 
       rectangle(frame,roil,Scalar(255)); 
       rectangle(frame,roir,Scalar(255)); 
