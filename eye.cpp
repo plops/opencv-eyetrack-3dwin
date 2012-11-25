@@ -120,9 +120,10 @@ int main(int argc,char**argv)
     if(faces.size()){
       Rect left;
       double eye_s=g_size*2./g_size_n;
+      float eye_x=.7;
       Point
-	rc=faces[0].tl()+Point(.7*faces[0].width,.4*faces[0].height),
-	lc=faces[0].tl()+Point(.3*faces[0].width,.4*faces[0].height),
+	rc=faces[0].tl()+Point(eye_x*faces[0].width,.4*faces[0].height),
+	lc=faces[0].tl()+Point((1-eye_x)*faces[0].width,.4*faces[0].height),
 	s=Size(eye_s*.5*.35*faces[0].width,eye_s*.8*.5*.3*faces[0].height);
       //Mat left_eye;
       Rect roir(rc-s,rc+s),roil(lc-s,lc+s);;
@@ -183,7 +184,7 @@ int main(int argc,char**argv)
       
       Point l= lc-s+lMa, r= rc-s+rMa, a = .5*(r+l);
       double d=norm(r-l);
-      std::cout << a.x << " " << a.y << " " << d << std::endl;
+      std::cout << "(" << (a.x-320)*1./320 << " " << (a.y-240)*1./240 << " " << d <<")"<< std::endl;
       
       //      lmer.at<float>(Ma.y,Ma.x)=0;
       //rg.at<float>(Ma.y,Ma.x)=100;
@@ -209,7 +210,7 @@ int main(int argc,char**argv)
    } else
       imshow("bla",g);
     
-    if(waitKey(10) >= 0) 
+    if(waitKey(5) >= 0) 
       ;
   }
 }
