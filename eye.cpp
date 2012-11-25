@@ -198,8 +198,8 @@ int main(int argc,char**argv)
 
       //rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
 
-      circle(frame,rc-s+rMa,8,Scalar(20));
-      circle(frame,lc-s+lMa,8,Scalar(20));
+      circle(frame,rc-s+rMa,20,Scalar(20),-1);
+      circle(frame,lc-s+lMa,20,Scalar(20),-1);
       line(frame,l,r,4);
       circle(frame,a,3,Scalar(255,255,255));
       line(frame,a-Point(.5*d,0),a+Point(.5*d,0),Scalar(255,255,255),3);

@@ -8,22 +8,38 @@
 
 (in-package :disp)
 
+#+nil
 (with-open-file (s "~/1122/opencv/build/eyepos")
   (loop for line = (read-line s nil nil)
        while line do
        (format t "~a~%" (read-from-string line))))
 
+#+nil
+(defparameter *eye-input* (open "~/1122/opencv/build/eyepos"))
+#+nil
+(read *eye-input*)
+#+nil
+(close *eye-input*)
+
 
 (let ((rot 0))
  (defun draw ()
+   ;;(format t "~a~%" (read *eye-input*))
    (load-identity)
-   (glu:look-at 0 20 14 ;; cam
-		0 0 0   ;; target
-		0 0 1)
+   (let ((line (read *eye-input*)))
+     
+    (destructuring-bind (ex ey l) line
+      (let* ((y (+ 20 (* .3 (- 100 l))))
+	     (z (* -20 ey))
+	     (x (* 10 ex)))
+       (format t "~a~%" (list x y z)) 
+       (glu:look-at x y z ;; cam
+		    0 0 0			   ;; target
+		    0 0 1))))
    (clear :color-buffer-bit)
    (clear-color 0 0 0 0)
    
-   
+   (scale 10 10 10)
    (begin :lines)
    (color 1 0 0) (vertex 0 0 0) (vertex  1  0 0)
    (color 0 1 0) (vertex 0 0 0) (vertex  0  1 0)
