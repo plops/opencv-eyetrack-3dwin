@@ -32,11 +32,11 @@ int main(int argc,char**argv)
   Mat frame;
   while(1){
     c >> frame;
-    //GaussianBlur(image,image,Size(5,5),3,3);
+    GaussianBlur(frame,frame,Size(5,5),3,3);
     Mat g;
     cvtColor(frame,g,CV_BGR2GRAY);
     std::vector<Rect>faces;
-    face.detectMultiScale(frame,faces,1.2,12,
+    face.detectMultiScale(g,faces,1.2,12,
 			  0
 			  |CV_HAAR_FIND_BIGGEST_OBJECT
 			  |CV_HAAR_DO_ROUGH_SEARCH
@@ -46,30 +46,36 @@ int main(int argc,char**argv)
       Point
 	rc=faces[0].tl()+Point(.7*faces[0].width,.4*faces[0].height),
 	lc=faces[0].tl()+Point(.3*faces[0].width,.4*faces[0].height),
-	s=Size(.3*.35*faces[0].width,.3*.3*faces[0].height);
+	s=Size(.5*.35*faces[0].width,.5*.3*faces[0].height);
       //Mat left_eye;
-      Rect roi(lc-s,lc+s);
-      Mat 
-	lfx(roi.size(),CV_32FC1),
-	lfy(roi.size(),CV_32FC1),
-	rfx(roi.size(),CV_32FC1),
-	rfy(roi.size(),CV_32FC1);
-      
-      fx->apply(g,lfx,roi);
-      fy->apply(g,lfy,roi);
-      fx->apply(g,rfx,roi);
-      fy->apply(g,rfy,roi);
+      Rect roir(rc-s,rc+s),roil(lc-s,lc+s);;
+      // Mat 
+      // 	lfx(roil.size(),CV_32FC1),
+      // 	lfy(roil.size(),CV_32FC1),
+      // 	rfx(roir.size(),CV_32FC1),
+      // 	rfy(roir.size(),CV_32FC1);
+
       Mat
-	lg,
-	rg;
-      magnitude(lfx,lfy,lg);
-      magnitude(rfx,rfy,rg);
-      imshow("left",.01*lg);
-      imshow("right",.01*rg);
+	lfx_u(g,roil);
+
+      Mat lfx;
+      lfx_u.convertTo(lfx,CV_32FC1);
       
-      rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
+      
+      fx->apply(lfx_u,lfx);
+      //fy->apply(g,lfy,roil);
+      //   fx->apply(g,rfx,roil,Point(lc-s));
+      //fy->apply(g,rfy,roil,Point(lc-s));
+      Mat lg, rg;
+      //magnitude(lfx,lfy,lg);
+      //magnitude(rfx,rfy,rg);
+      imshow("left",lfx/255.);
+      // imshow("right",.005*rg);
+      
+      //rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
+      rectangle(frame,roil,Scalar(255)); 
       rectangle(frame,faces[0],Scalar(255),3); 
-      rectangle(frame,Rect(rc-s,rc+s),Scalar(255)); 
+      rectangle(frame,roir,Scalar(255)); 
       imshow("bla",frame);
    } else
       imshow("bla",g);
