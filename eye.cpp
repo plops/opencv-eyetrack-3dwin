@@ -55,8 +55,10 @@ int main(int argc,char**argv)
       // 	rfx(roir.size(),CV_32FC1),
       // 	rfy(roir.size(),CV_32FC1);
 
-      Mat lblur(g,roil),rblur(g,roir);
-      double sig=1.6;
+      Mat 
+	lblur(g,roil),
+	rblur(g,roir);
+      double sig=1.7;
       GaussianBlur(lblur,lblur,Size(7,7),sig,sig);
       GaussianBlur(rblur,rblur,Size(7,7),sig,sig);
 
@@ -74,8 +76,16 @@ int main(int argc,char**argv)
       Mat lg, rg;
       magnitude(lfx,lfy,lg);
       magnitude(rfx,rfy,rg);
-      imshow("left",.01*lg);
-      imshow("right",.01*rg);
+      Mat lsm,lss;
+      meanStdDev(lg,lsm,lss);
+      Mat rsm,rss;
+      meanStdDev(rg,rsm,rss);
+      Mat 
+	threshold_r=rsm+.5*rss,
+	threshold_l=lsm+.5*lss;
+      
+      imshow("left",.04*(lg-threshold_l));
+      imshow("right",.04*(rg-threshold_r));
       
       //rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
       rectangle(frame,roil,Scalar(255)); 
