@@ -9,7 +9,7 @@ computeMerrit(const Mat &gx,const Mat &gy,const Mat &g,
 {
   int h=gx.rows, w=gx.cols;
   //Mat res(h,w,CV_32FC1,Scalar(0));
-  int o=0;
+  int o=2;
   for(int jj=o;jj<h-o;jj++){
     float*R=res.ptr<float>(jj);
     const uchar*I=Im.ptr<uchar>(jj);
@@ -61,39 +61,37 @@ int main(int argc,char**argv)
   CascadeClassifier face;
   face.load("haarcascade_frontalface_default.xml");
   namedWindow("bla",CV_WINDOW_AUTOSIZE);
-  namedWindow("left",CV_WINDOW_AUTOSIZE);
-  namedWindow("lmerrit",CV_WINDOW_AUTOSIZE);
-  namedWindow("right",CV_WINDOW_AUTOSIZE);
+  // namedWindow("left",CV_WINDOW_AUTOSIZE);
+  // namedWindow("lmerrit",CV_WINDOW_AUTOSIZE);
+  // namedWindow("right",CV_WINDOW_AUTOSIZE);
 
   moveWindow("bla",0,100);
-  moveWindow("lmerrit",200,0);
-  moveWindow("right",400,0);
+  //moveWindow("lmerrit",200,0);
+  //moveWindow("right",400,0);
 
   Ptr<FilterEngine> fx = createDerivFilter(CV_8UC1,CV_32FC1,1,0,1);
   Ptr<FilterEngine> fy = createDerivFilter(CV_8UC1,CV_32FC1,0,1,1);
-
-  Mat frame;
-
-  c >> frame;
-  //GaussianBlur(frame,frame,Size(5,5),3,3);
-  Mat g;
-  cvtColor(frame,g,CV_BGR2GRAY);
-  std::vector<Rect>faces;
-  face.detectMultiScale(g,faces,1.2,12,
-			0
-			|CV_HAAR_FIND_BIGGEST_OBJECT
-			|CV_HAAR_DO_ROUGH_SEARCH
-			|CV_HAAR_SCALE_IMAGE,Size(30,30));
   
-  Mat oldframe,ooldframe;
+  Mat frame;
+  
+  //  Mat oldframe,ooldframe;
   while(1){
-    ooldframe=oldframe.clone();
-    oldframe=frame.clone();
+    // ooldframe=oldframe.clone();
+    //oldframe=frame.clone();
     c >> frame;
+    //GaussianBlur(frame,frame,Size(5,5),3,3);
+    Mat g;
+    cvtColor(frame,g,CV_BGR2GRAY);
+    std::vector<Rect>faces;
+    face.detectMultiScale(g,faces,1.2,12,
+			  0
+			  |CV_HAAR_FIND_BIGGEST_OBJECT
+			  |CV_HAAR_DO_ROUGH_SEARCH
+			  |CV_HAAR_SCALE_IMAGE,Size(30,30));
     
 
-    Mat g;
-    cvtColor((frame+oldframe+ooldframe)/3,g,CV_BGR2GRAY);
+  // Mat g;
+    //cvtColor((frame+oldframe+ooldframe)/3,g,CV_BGR2GRAY);
   
     if(faces.size()){
       Rect left;
@@ -143,30 +141,35 @@ int main(int argc,char**argv)
 	threshold_r=rsm+.3*rss,
 	threshold_l=lsm+.3*lss;
       
-      std::cout << threshold_r.at<double>(0) << " "
-		<< threshold_l.at<double>(0) << std::endl;
+      //std::cout << threshold_r.at<double>(0) << " "
+      //	<< threshold_l.at<double>(0) << std::endl;
       
       //imshow("left",.04*(lg-threshold_l));
-      Mat lmer(rblur.size(),CV_32FC1,Scalar(0));;
+      Mat rmer(rblur.size(),CV_32FC1,Scalar(0)),
+	lmer(lblur.size(),CV_32FC1,Scalar(0));
       //std::cout << rblur.type() << std::endl;
-      computeMerrit(rfx,rfy,rg,rblur,lmer,threshold_r.at<double>(0));
-      double ma,mi;
-      Point Ma;
-      minMaxLoc(lmer,&mi,&ma,0,&Ma);
+      computeMerrit(rfx,rfy,rg,rblur,rmer,threshold_r.at<double>(0));
+      computeMerrit(lfx,lfy,lg,lblur,lmer,threshold_l.at<double>(0));
+      double rma,lma;
+      Point rMa,lMa;
+      minMaxLoc(lmer,0,&lma,0,&lMa);
+      minMaxLoc(rmer,0,&rma,0,&rMa);
       //      lmer.at<float>(Ma.y,Ma.x)=0;
-      rg.at<float>(Ma.y,Ma.x)=100;
-      double rat=.0;
-      imshow("lmerrit",((lmer-mi)/(ma-mi)-rat)/(1-rat));
-      imshow("left",255*rsel/norm(rsel,NORM_INF));
+      //rg.at<float>(Ma.y,Ma.x)=100;
+      //double rat=.0;
+      //      imshow("lmerrit",((lmer-mi)/(ma-mi)-rat)/(1-rat));
+      //imshow("left",255*rsel/norm(rsel,NORM_INF));
       
-      imshow("right",4*(rg-threshold_r)/norm((rg-threshold_r),NORM_INF));
+      //imshow("right",4*(rg-threshold_r)/norm((rg-threshold_r),NORM_INF));
 
       //rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
-      rectangle(g,roil,Scalar(255)); 
-      circle(g,rc-s+Ma,4,Scalar(255));
-      rectangle(g,faces[0],Scalar(255),3); 
-      rectangle(g,roir,Scalar(255)); 
-      imshow("bla",g);
+
+      circle(frame,rc-s+rMa,4,Scalar(255));
+      circle(frame,lc-s+lMa,4,Scalar(255));
+      rectangle(frame,faces[0],Scalar(255),3); 
+      rectangle(frame,roil,Scalar(255)); 
+      rectangle(frame,roir,Scalar(255)); 
+      imshow("bla",frame);
    } else
       imshow("bla",g);
     
