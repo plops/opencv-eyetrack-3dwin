@@ -43,13 +43,22 @@ computeMerrit(const Mat &gx,const Mat &gy,const Mat &g,
     }
   }
 }
+
+void
+on_opengl(void*parm)
+{
+  Point**Ma=(Point**)parm;
+  Point lMa=*(Ma[0]), rMa=*(Ma[1]);
+}
+
+
 int main(int argc,char**argv)
 {
   
   VideoCapture c(0);
   if(!c.isOpened())
     return -1;
-  std::cout << "frame: " <<
+  std::cerr << "frame: " <<
     c.get(CV_CAP_PROP_FRAME_WIDTH) << " " <<
     c.get(CV_CAP_PROP_FRAME_HEIGHT) << std::endl;
   /*  c.set(CV_CAP_PROP_FRAME_WIDTH,352);
@@ -67,6 +76,13 @@ int main(int argc,char**argv)
   namedWindow("right",CV_WINDOW_AUTOSIZE);
   namedWindow("rmerrit",CV_WINDOW_AUTOSIZE);
   
+  //namedWindow("gl",1);
+  //Mat gl(Size(1350,700),CV_8UC1);
+  //imshow("gl",gl);
+  Point rMa,lMa;
+  //Point*parm[2]={&lMa,&rMa};
+  //setOpenGlDrawCallback("gl",on_opengl,(void*)&parm);
+
   int g_thr=30/4,g_thr_n=100;
   createTrackbar("gradient-threshold","bla",&g_thr,g_thr_n);
   int g_size=40/2,g_size_n=100;
@@ -149,7 +165,7 @@ int main(int argc,char**argv)
 	threshold_r=rsm+g_thr*4./g_thr_n*rss,
 	threshold_l=lsm+g_thr*4./g_thr_n*lss;
       
-      std::cout << g_thr << std::endl;
+      //std::cout << g_thr << std::endl;
 
       //std::cout << threshold_r.at<double>(0) << " "
       //	<< threshold_l.at<double>(0) << std::endl;
@@ -161,9 +177,14 @@ int main(int argc,char**argv)
       computeMerrit(rfx,rfy,rg,rblur,rmer,threshold_r.at<double>(0));
       computeMerrit(lfx,lfy,lg,lblur,lmer,threshold_l.at<double>(0));
       double rma,lma;
-      Point rMa,lMa;
+      // Point rMa,lMa;
       minMaxLoc(lmer,0,&lma,0,&lMa);
       minMaxLoc(rmer,0,&rma,0,&rMa);
+      
+      Point l= lc-s+lMa, r= rc-s+rMa, a = .5*(r+l);
+      double d=norm(r-l);
+      std::cout << a.x << " " << a.y << " " << d << std::endl;
+      
       //      lmer.at<float>(Ma.y,Ma.x)=0;
       //rg.at<float>(Ma.y,Ma.x)=100;
       {double rat=.9;
@@ -176,11 +197,14 @@ int main(int argc,char**argv)
 
       //rectangle(frame,Rect(lc-s,lc+s),Scalar(255)); 
 
-      circle(frame,rc-s+rMa,8,Scalar(255));
-      circle(frame,lc-s+lMa,8,Scalar(255));
-      rectangle(frame,faces[0],Scalar(255),3); 
-      rectangle(frame,roil,Scalar(255)); 
-      rectangle(frame,roir,Scalar(255)); 
+      circle(frame,rc-s+rMa,8,Scalar(20));
+      circle(frame,lc-s+lMa,8,Scalar(20));
+      line(frame,l,r,4);
+      circle(frame,a,3,Scalar(255,255,255));
+      line(frame,a-Point(.5*d,0),a+Point(.5*d,0),Scalar(255,255,255),3);
+      rectangle(frame,faces[0],Scalar(0),3); 
+      rectangle(frame,roil,Scalar(0)); 
+      rectangle(frame,roir,Scalar(0)); 
       imshow("bla",frame);
    } else
       imshow("bla",g);

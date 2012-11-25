@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+set(CMAKE_CXX_FLAGS         "${CMAKE_CXX_FLAGS} -ggdb -Wall -Wextra -O3 -fomit-frame-pointer -ffast-math -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2")
 project(eye)
 find_package(OpenCV REQUIRED)
 add_executable(eye eye)
